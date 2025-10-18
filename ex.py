@@ -18,21 +18,13 @@ data = pd.DataFrame({
     "Température (°C)": np.random.normal(60, 5, 100),
     "Courant (A)": np.random.normal(10, 2, 100),
 })
-
-# --- Calcul de la probabilité de panne ---
-data["Probabilité de panne (%)"] = (
-    0.5 * data["Vibration (mm/s)"] +
-    0.03 * data["Température (°C)"] +
-    0.2 * data["Courant (A)"] +
-    np.random.normal(0, 1, 100)
-)
-
-# --- Vérification des données ---
-if data.isnull().values.any():
-    st.warning("⚠️ Des valeurs manquantes ont été détectées dans les données.")
+data["Probabilité de panne (%)"] = (0.5 * data["Vibration (mm/s)"] +
+                                    0.3 * data["Température (°C)"]/10 +
+                                    0.2 * data["Courant (A)"]) + np.random.normal(0, 1, 100)
 
 # --- Séparation en colonnes ---
 col1, col2, col3 = st.columns(3)
+
 with col1:
     st.metric("⚙️ Machines surveillées", "12")
     st.metric("📉 Pannes évitées", "7")
@@ -55,13 +47,9 @@ fig2 = px.area(data, x="Temps (s)", y="Probabilité de panne (%)",
                color_discrete_sequence=["red"], title="Probabilité de panne prédite par IA")
 st.plotly_chart(fig2, use_container_width=True)
 
-# --- Seuil d'alerte dynamique ou manuel ---
-st.markdown("### 🔧 Paramétrage du seuil d'alerte")
-seuil_utilisateur = st.slider("Définir le seuil d'alerte (%)", min_value=50, max_value=100, value=80)
-
 # --- Alerte ---
 last_prob = data["Probabilité de panne (%)"].iloc[-1]
-if last_prob > seuil_utilisateur:
+if last_prob > 80:
     st.error(f"🚨 Risque élevé de panne : {last_prob:.2f}% — Intervention recommandée !")
 else:
     st.success(f"✅ Système stable : Probabilité de panne = {last_prob:.2f}%")
